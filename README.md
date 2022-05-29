@@ -24,5 +24,3 @@ Java 8 https://www.java.com/en/download/manual.jsp
 
 **How to use**
 Download the zip from here, extract to a location, then open the dist folder and run the Beach_Atlas_Config.jar  If you already specified ports/ip addresses this CURRENTLY replaces that with the ip and ports listed on the app.  This is a feature to be added later.
-
-Special thanks to Gaxon for his help with testing.
