@@ -31,7 +31,7 @@ public class JSONSelection extends javax.swing.JFrame {
      */
     public JSONSelection() {
         initComponents();
-        this.setTitle("Beach Config Manager");
+        this.setTitle("Beach Atlas Config v1.2c");
         try {
             URL whatismyip = new URL("http://checkip.amazonaws.com");
             BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -87,6 +87,7 @@ public class JSONSelection extends javax.swing.JFrame {
         nameBox = new javax.swing.JCheckBox();
         populateBox = new javax.swing.JCheckBox();
         transientBox = new javax.swing.JCheckBox();
+        updateBox = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -203,8 +204,9 @@ public class JSONSelection extends javax.swing.JFrame {
         });
 
         discoveryBox.setText("Fill in Discovery Zones");
+        discoveryBox.setEnabled(false);
 
-        nameBox.setText("Give Server Names From Templates");
+        nameBox.setText("Set Server Names From Templates");
         nameBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameBoxActionPerformed(evt);
@@ -214,9 +216,18 @@ public class JSONSelection extends javax.swing.JFrame {
         populateBox.setText("Populate Power Stones and Essences");
 
         transientBox.setText("Add Transient Nodes");
+        transientBox.setEnabled(false);
         transientBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 transientBoxActionPerformed(evt);
+            }
+        });
+
+        updateBox.setSelected(true);
+        updateBox.setText("Enable port update");
+        updateBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateBoxActionPerformed(evt);
             }
         });
 
@@ -244,17 +255,20 @@ public class JSONSelection extends javax.swing.JFrame {
                         .addComponent(xLabel))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel10))
-                        .addGap(24, 24, 24)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(queryStartField)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(seamlessStartField)
-                            .addComponent(rconStartField)
-                            .addComponent(gameStartField))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel9)
+                                    .addComponent(jLabel10))
+                                .addGap(24, 24, 24)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(queryStartField)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(seamlessStartField)
+                                    .addComponent(rconStartField)
+                                    .addComponent(gameStartField)))
+                            .addComponent(updateBox))
                         .addGap(38, 38, 38)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel8)
@@ -340,11 +354,17 @@ public class JSONSelection extends javax.swing.JFrame {
                     .addComponent(rconStartField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(rconEndField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(transientBox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(processButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(overwriteBox))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(processButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(overwriteBox))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(updateBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(37, 37, 37))
         );
@@ -354,7 +374,7 @@ public class JSONSelection extends javax.swing.JFrame {
         jTextArea1.setColumns(20);
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("This configurator does a couple of things.  When you select your ServerGrid.json file, it will pull the number of x grids and y grids, and begin to populate suggested ports that would need to be forwarded.  The ip address is retrieved from amazon aws.\n\nGame, Query and RCON ports will do port number +1.  This may be removed in future releases, but keeping in place for the moment.  Seamless increments by 1 for each grid.  These ports and the external ip are saved to the json.  This program uses amazonaws to prune your external ip address.  \n\nUsing the check box for Fill in Discovery Zones will only add discovery names from the discozones text file located in resources.  It assigns the names from the top of the file downward, so if you decide you want some of yours assigned, put them at the top of the file.  Names will be repeated if you have more discovery zones than the number of lines in the file.\n\nThe Give Server Names From Templates option will, if server templates used when creating the servergrid, make the server name be named as server template name_increment, e.g. Polar_1, Low Desert_2.  This only writes to names that are not set.  This option is useful if you want to give your players a heads up for what type of template the grid they are going is.\n\nThe Populate Power Stones and Essences will set the quest entries to the correct islands.  The quest location points just to the island itself, not to the specific location on the island.  This option is disabled if when you specify your json it does not contai each of the PVE islands and at least 9 trenches.  This will also set the quest location for the kraken if one of your grids has the extraSublevels set for EndBossLevel.\n\nThe add transient nodes check box will add cursed and sulfurous ground to the islands specified in the transient.txt file.  These islands were pulled from the official json, but can add additional islands to the file.  This will alternate between the two transient types.\n\nSelecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program.");
+        jTextArea1.setText("This configurator does a couple of things.  When you select your ServerGrid.json file, it will pull the number of x grids and y grids, and begin to populate suggested ports that would need to be forwarded.  The ip address is retrieved from amazon aws.\n\nGame, Query and RCON ports will do port number +1.  This may be removed in future releases, but keeping in place for the moment.  Seamless increments by 1 for each grid.  These ports and the external ip are saved to the json.  This program uses amazonaws to prune your external ip address.  The enable port update will write the ports to the json.\n\nUsing the check box for Fill in Discovery Zones will only add discovery names from the discozones text file located in resources.  It assigns the names from the top of the file downward, so if you decide you want some of yours assigned, put them at the top of the file.  Names will be repeated if you have more discovery zones than the number of lines in the file.\n\nThe Set Server Names From Templates option will, if server templates used when creating the servergrid, make the server name be named as server template name grid, e.g. Polar A2, Low Desert C3.  This only writes to names that are not set.  This option is useful if you want to give your players a heads up for what type of template the grid they are going is.\n\nThe Populate Power Stones and Essences will set the quest entries to the correct islands.  The quest location points just to the island itself, not to the specific location on the island.  This option is disabled if when you specify your json it does not contain each of the PVE islands and at least 9 trenches.  This will also set the quest location for the kraken if one of your grids has the extraSublevels set for EndBossLevel.  This function also adds the discovery zones that appear in the official json for the powerstones, essences, etc.  This option is independent of the fill in discovery zones option.\n\nThe add transient nodes check box will add cursed and sulfurous ground to the islands specified in the transient.txt file.  These islands were pulled from the official json, but can add additional islands to the file.  This will alternate between the two transient types.\n\nSelecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program.  If you don't overwrite the file, it is placed in the same directory as this app.");
         jTextArea1.setWrapStyleWord(true);
         jScrollPane3.setViewportView(jTextArea1);
 
@@ -431,8 +451,8 @@ public class JSONSelection extends javax.swing.JFrame {
                 if (!parse.hasEnoughTrenches()) {
                     statusArea.append("Not enough trenches to populate essences.  Need at least 9\n");
                 }
-                if(!parse.hasKraken()){
-                     statusArea.append("The kraken endboss level not detected for any grid.\n");
+                if (!parse.hasKraken()) {
+                    statusArea.append("The kraken endboss level not detected for any grid.\n");
                 }
             } catch (FileNotFoundException ex) {
                 statusArea.append("File not found or incorrect format\n");
@@ -474,11 +494,8 @@ public class JSONSelection extends javax.swing.JFrame {
             boolean overwrite = overwriteBox.isSelected();
             parse.writeJSONFile(steps, overwrite);
 
-      
-     
-
         } catch (Exception e) {
-            
+
         }
     }//GEN-LAST:event_processButtonActionPerformed
 
@@ -497,16 +514,15 @@ public class JSONSelection extends javax.swing.JFrame {
 
         firewalls.add(getFirewallInfo("Query", "TCP", queryStart, queryEnd));
         firewalls.add(getFirewallInfo("Query", "UDP", queryStart, queryEnd));
-        
+
         firewalls.add(getFirewallInfo("RCON", "TCP", rconStart, rconEnd));
         firewalls.add(getFirewallInfo("RCON", "UDP", rconStart, rconEnd));
-        
+
         firewalls.add(getFirewallInfo("Seamless", "TCP", seamStart, seamEnd));
         firewalls.add(getFirewallInfo("Seamless", "UDP", seamStart, seamEnd));
-        
-        
-        for(String firewall : firewalls){
-            String command = "cmd /c start "+firewall;
+
+        for (String firewall : firewalls) {
+            String command = "cmd /c start " + firewall;
             Process p = Runtime.getRuntime().exec(command);
         }
     }
@@ -576,6 +592,14 @@ public class JSONSelection extends javax.swing.JFrame {
     private void overwriteBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overwriteBoxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_overwriteBoxActionPerformed
+
+    private void updateBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBoxActionPerformed
+
+        this.queryStartField.setEnabled(updateBox.isSelected());
+        this.rconStartField.setEnabled(updateBox.isSelected());
+        this.gameStartField.setEnabled(updateBox.isSelected());
+        this.seamlessStartField.setEnabled(updateBox.isSelected());
+    }//GEN-LAST:event_updateBoxActionPerformed
 
     /**
      * @param args the command line arguments
@@ -649,6 +673,7 @@ public class JSONSelection extends javax.swing.JFrame {
     private javax.swing.JTextField seamlessStartField;
     public static javax.swing.JTextArea statusArea;
     private javax.swing.JCheckBox transientBox;
+    public static javax.swing.JCheckBox updateBox;
     private javax.swing.JLabel xLabel;
     private javax.swing.JLabel yLabel;
     // End of variables declaration//GEN-END:variables

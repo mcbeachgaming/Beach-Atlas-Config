@@ -81,18 +81,23 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel9" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="queryStartField" alignment="0" max="32767" attributes="0"/>
-                              <Component id="jLabel7" alignment="0" max="32767" attributes="0"/>
-                              <Component id="seamlessStartField" alignment="0" max="32767" attributes="0"/>
-                              <Component id="rconStartField" alignment="0" max="32767" attributes="0"/>
-                              <Component id="gameStartField" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel9" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="queryStartField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="jLabel7" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="seamlessStartField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="rconStartField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="gameStartField" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Component id="updateBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -201,12 +206,21 @@
                       <Component id="rconEndField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="transientBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="processButton" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
-                      <Component id="overwriteBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="processButton" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                              <Component id="overwriteBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="updateBox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
                   </Group>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
               </Group>
@@ -406,11 +420,12 @@
         <Component class="javax.swing.JCheckBox" name="discoveryBox">
           <Properties>
             <Property name="text" type="java.lang.String" value="Fill in Discovery Zones"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JCheckBox" name="nameBox">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Give Server Names From Templates"/>
+            <Property name="text" type="java.lang.String" value="Set Server Names From Templates"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nameBoxActionPerformed"/>
@@ -424,10 +439,23 @@
         <Component class="javax.swing.JCheckBox" name="transientBox">
           <Properties>
             <Property name="text" type="java.lang.String" value="Add Transient Nodes"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transientBoxActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="updateBox">
+          <Properties>
+            <Property name="selected" type="boolean" value="true"/>
+            <Property name="text" type="java.lang.String" value="Enable port update"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="updateBoxActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -473,7 +501,7 @@
                 <Property name="columns" type="int" value="20"/>
                 <Property name="lineWrap" type="boolean" value="true"/>
                 <Property name="rows" type="int" value="5"/>
-                <Property name="text" type="java.lang.String" value="This configurator does a couple of things.  When you select your ServerGrid.json file, it will pull the number of x grids and y grids, and begin to populate suggested ports that would need to be forwarded.  The ip address is retrieved from amazon aws.&#xa;&#xa;Game, Query and RCON ports will do port number +1.  This may be removed in future releases, but keeping in place for the moment.  Seamless increments by 1 for each grid.  These ports and the external ip are saved to the json.  This program uses amazonaws to prune your external ip address.  &#xa;&#xa;Using the check box for Fill in Discovery Zones will only add discovery names from the discozones text file located in resources.  It assigns the names from the top of the file downward, so if you decide you want some of yours assigned, put them at the top of the file.  Names will be repeated if you have more discovery zones than the number of lines in the file.&#xa;&#xa;The Give Server Names From Templates option will, if server templates used when creating the servergrid, make the server name be named as server template name_increment, e.g. Polar_1, Low Desert_2.  This only writes to names that are not set.  This option is useful if you want to give your players a heads up for what type of template the grid they are going is.&#xa;&#xa;The Populate Power Stones and Essences will set the quest entries to the correct islands.  The quest location points just to the island itself, not to the specific location on the island.  This option is disabled if when you specify your json it does not contai each of the PVE islands and at least 9 trenches.  This will also set the quest location for the kraken if one of your grids has the extraSublevels set for EndBossLevel.&#xa;&#xa;The add transient nodes check box will add cursed and sulfurous ground to the islands specified in the transient.txt file.  These islands were pulled from the official json, but can add additional islands to the file.  This will alternate between the two transient types.&#xa;&#xa;Selecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program."/>
+                <Property name="text" type="java.lang.String" value="This configurator does a couple of things.  When you select your ServerGrid.json file, it will pull the number of x grids and y grids, and begin to populate suggested ports that would need to be forwarded.  The ip address is retrieved from amazon aws.&#xa;&#xa;Game, Query and RCON ports will do port number +1.  This may be removed in future releases, but keeping in place for the moment.  Seamless increments by 1 for each grid.  These ports and the external ip are saved to the json.  This program uses amazonaws to prune your external ip address.  The enable port update will write the ports to the json.&#xa;&#xa;Using the check box for Fill in Discovery Zones will only add discovery names from the discozones text file located in resources.  It assigns the names from the top of the file downward, so if you decide you want some of yours assigned, put them at the top of the file.  Names will be repeated if you have more discovery zones than the number of lines in the file.&#xa;&#xa;The Set Server Names From Templates option will, if server templates used when creating the servergrid, make the server name be named as server template name grid, e.g. Polar A2, Low Desert C3.  This only writes to names that are not set.  This option is useful if you want to give your players a heads up for what type of template the grid they are going is.&#xa;&#xa;The Populate Power Stones and Essences will set the quest entries to the correct islands.  The quest location points just to the island itself, not to the specific location on the island.  This option is disabled if when you specify your json it does not contain each of the PVE islands and at least 9 trenches.  This will also set the quest location for the kraken if one of your grids has the extraSublevels set for EndBossLevel.  This function also adds the discovery zones that appear in the official json for the powerstones, essences, etc.  This option is independent of the fill in discovery zones option.&#xa;&#xa;The add transient nodes check box will add cursed and sulfurous ground to the islands specified in the transient.txt file.  These islands were pulled from the official json, but can add additional islands to the file.  This will alternate between the two transient types.&#xa;&#xa;Selecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program.  If you don&apos;t overwrite the file, it is placed in the same directory as this app."/>
                 <Property name="wrapStyleWord" type="boolean" value="true"/>
               </Properties>
             </Component>

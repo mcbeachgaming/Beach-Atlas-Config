@@ -42,19 +42,20 @@ public class AtlasJSONParser {
     static int seamlessPort = 27000;
     static int serverCount = 1;
     static String ipAddress = "";
-    File file = new File("ServerGrid.json");
-    String myJson;
-    JSONObject obj;
-    JSONObject srv;
-    long grid;
-    long gridsX;
-    long gridsY;
-    long totalX;
-    long totalY;
+    static File file = new File("ServerGrid.json");
+    static String myJson;
+    static JSONObject obj;
+    static JSONObject srv;
+    static long grid;
+    static long gridsX;
+    static long gridsY;
+    static long totalX;
+    static long totalY;
     //add the kraken boss
     int krakenX = 0;
     int krakenY = 0;
-
+    int trenchCount = 0;
+    OfficialJSONLoader loader = new OfficialJSONLoader();
     static ArrayList<String> powerstones = new ArrayList<>();
     static ArrayList<String> essences = new ArrayList<>();
 
@@ -89,7 +90,9 @@ public class AtlasJSONParser {
         int size = servers.length();
         boolean contains = false;
 
-        for (int k = 0; k < PVE_MAPS.length; k++) {
+        for (int k = 0; k < Constants.PVE_MAPS.length; k++) {
+            contains = false;
+
             for (int i = 0; i < size; i++) {
                 //get the islands on the server
                 JSONObject server = servers.getJSONObject(i);
@@ -100,15 +103,16 @@ public class AtlasJSONParser {
 
                     //get the name of the island
                     String island = islands.getJSONObject(j).get("name").toString();
-                    if (island.equalsIgnoreCase(PVE_MAPS[k])) {
+                    if (island.equalsIgnoreCase(Constants.PVE_MAPS[k])) {
                         contains = true;
                         break;
                     }
                 }
             }
+
             if (!contains) {
                 missing = false;
-                gui.JSONSelection.statusArea.append(PVE_MAPS[k] + " was NOT found in the servergrid\n");
+                gui.JSONSelection.statusArea.append(Constants.PVE_MAPS[k] + " was NOT found in the servergrid\n");
             }
         }
 
@@ -133,8 +137,8 @@ public class AtlasJSONParser {
 
                 //get the name of the island
                 String island = islands.getJSONObject(j).get("name").toString();
-                if (island.equalsIgnoreCase(TRENCH)) {
-                    System.out.println("Trench " + count);
+                if (island.equalsIgnoreCase(Constants.TRENCH)) {
+
                     count++;
                 }
             }
@@ -148,7 +152,7 @@ public class AtlasJSONParser {
         try {
             JSONArray servers = obj.getJSONArray("servers");
             int size = servers.length();
-            for (int j=0; j < size; j++) {
+            for (int j = 0; j < size; j++) {
                 JSONObject server = servers.getJSONObject(j);
                 JSONArray sublevels = server.getJSONArray("extraSublevels");
 
@@ -179,7 +183,7 @@ public class AtlasJSONParser {
             for (int i = 0; i < sublevels.length(); i++) {
                 String island = sublevels.get(i).toString();
                 if (island.compareToIgnoreCase("EndBossLevel") == 0) {
-                    System.out.println("End Boss Level found");
+
                     krakenX = Integer.parseInt(server.get("gridX").toString());
                     krakenY = Integer.parseInt(server.get("gridY").toString());
                     exists = true;
@@ -221,64 +225,47 @@ public class AtlasJSONParser {
                 JSONObject server = servers.getJSONObject(i);
                 //check if this had the kraken level
                 if (hasKraken(server)) {
-                    positionKraken = "X=" + getKraken(krakenX, (int) gridsX) + ",Y=" + getKraken(krakenY, (int) gridsY);
+                    positionKraken = "X=" + getCenterOfGrid(krakenX, (int) gridsX) + ",Y=" + getCenterOfGrid(krakenY, (int) gridsY);
                     System.out.println("Position kraken " + positionKraken);
                     positionsPVE.add(positionKraken);
                     positionsTrench.add(positionKraken);
                     krakenSet = true;
                 }
 
-                server.put("ip", ipAddress);
-                server.put("port", gamePort);
-                server.put("seamlessDataPort", seamlessPort);
-                server.put("gamePort", queryPort);
+                if (gui.JSONSelection.updateBox.isSelected()) {
+                    server.put("ip", ipAddress);
+                    server.put("port", gamePort);
+                    server.put("seamlessDataPort", seamlessPort);
+                    server.put("gamePort", queryPort);
+                    String cmdLine = "RCONEnabled=True?RCONPort=" + rconPort;
+                    server.put("AdditionalCmdLineParams", cmdLine);
+                }
+
                 seamlessPort++;
                 gamePort += 2;
                 queryPort += 2;
+                rconPort += 2;
                 JSONArray islands = server.getJSONArray("islandInstances");
                 int islandSize = islands.length();
                 for (int j = 0; j < islandSize; j++) {
-
+                    JSONObject island = islands.getJSONObject(j);
                     //get the name of the island
-                    String island = islands.getJSONObject(j).get("name").toString();
+                    String islandName = island.get("name").toString();
 
-                    if (island.equalsIgnoreCase(TRENCH)) {
-
-                        //get the island x, y and rotation
-                        long islandX = islands.getJSONObject(j).getLong("worldX");
-                        long islandY = islands.getJSONObject(j).getLong("worldY");
-                        BigDecimal calculatedX = getCalculated(islandX, totalX);
-                        BigDecimal calculatedY = getCalculated(islandY, totalY);
-                        String position = "X=" + calculatedX + ",Y=" + calculatedY;
-                        positionsTrench.add(position);
-                        positionsFountain.add(position);
-                    } else if (island.equalsIgnoreCase(CAVE)) {
-
-                        //get the island x, y and rotation
-                        long islandX = islands.getJSONObject(j).getLong("worldX");
-                        long islandY = islands.getJSONObject(j).getLong("worldY");
-                        BigDecimal calculatedX = getCalculated(islandX, totalX);
-                        BigDecimal calculatedY = getCalculated(islandY, totalY);
-                        String position = "X=" + calculatedX + ",Y=" + calculatedY;
-                        positionCave = position;
+                    if (islandName.equalsIgnoreCase(Constants.TRENCH)) {
+                        matchesType(Constants.TRENCH_TYPE, island);
+                    } else if (islandName.equalsIgnoreCase(Constants.CAVE)) {
+                        matchesType(Constants.CAVE_TYPE, island);
 
                     } else {
-                        for (int k = 0; k < PVE_MAPS.length; k++) {
-                            if (island.equalsIgnoreCase(PVE_MAPS[k])) {
-
-                                //get the island x, y
-                                long islandX = islands.getJSONObject(j).getLong("worldX");
-                                long islandY = islands.getJSONObject(j).getLong("worldY");
-                                BigDecimal calculatedX = getCalculated(islandX, totalX);
-                                BigDecimal calculatedY = getCalculated(islandY, totalY);
-                                String position = "X=" + calculatedX + ",Y=" + calculatedY;
-                                positionsPVE.add(position);
-
+                        for (int k = 0; k < Constants.PVE_MAPS.length; k++) {
+                            if (islandName.equalsIgnoreCase(Constants.PVE_MAPS[k])) {
+                                matchesType(Constants.PVE_TYPE, island);
                             }
                         }
                     }
 
-                }//end island loops
+                }
 
                 serverCount++;
             }//end server loop
@@ -294,7 +281,55 @@ public class AtlasJSONParser {
         }
     }
 
-    private BigDecimal getKraken(int selected, int total) {
+    private void matchesType(int type, JSONObject island) {
+        //get the island x, y and rotation
+        long islandX = island.getLong("worldX");
+        long islandY = island.getLong("worldY");
+        BigDecimal calculatedX = getCalculated(islandX, totalX);
+        BigDecimal calculatedY = getCalculated(islandY, totalY);
+        String position = "X=" + calculatedX + ",Y=" + calculatedY;
+
+        switch (type) {
+            case (Constants.PVE_TYPE):
+                positionsPVE.add(position);
+                break;
+            case (Constants.TRENCH_TYPE):
+                positionsTrench.add(position);
+                positionsFountain.add(position);
+                break;
+            case (Constants.CAVE_TYPE):
+                positionCave = position;
+                break;
+        }
+    }
+
+
+    /**
+     * we need to track which trenches have been taken
+     *
+     * @param islandName the name of the island
+     * @return
+     */
+    private JSONArray getDiscoZones(String islandName) {
+        /**
+         * so first, we need to load the servergrid json
+         */
+
+        ArrayList<Object[]> discos = loader.getOfficial();
+
+        JSONArray discoArray = null;
+        for (Object[] disco : discos) {
+            String name = disco[0].toString();
+            if (name.equalsIgnoreCase(islandName)) {
+                discoArray = (JSONArray) disco[1];
+            }
+        }
+
+        return discoArray;
+
+    }
+
+    private BigDecimal getCenterOfGrid(int selected, int total) {
         //since index starts at 0, we need to start at 1.
         //the selected grid is the grid where the kraken will be
         // we will place it in the middle of that grid.
@@ -315,8 +350,8 @@ public class AtlasJSONParser {
     }
 
     public void writeJSONFile(String step, boolean overwrite) throws IOException {
-
-        FileWriter test = new FileWriter("ServerGrid.json");
+        String parent = file.getParent();
+        FileWriter test = new FileWriter(parent + File.separator + "ServerGrid_modified.json");
         if (overwrite) {
             test = new FileWriter(file);
         }
@@ -336,16 +371,20 @@ public class AtlasJSONParser {
         JSONArray servers = obj.getJSONArray("servers");
         int size = servers.length();
         int power = 0;
-        for (int k = 0; k < PVE_MAPS.length; k++) {
+        for (int k = 0; k < Constants.PVE_MAPS.length; k++) {
             for (int i = 0; i < size; i++) {
                 //get the islands on the server
                 JSONObject server = servers.getJSONObject(i);
+                int powerStoneX = Integer.parseInt(server.get("gridX").toString());
+                int powerStoneY = Integer.parseInt(server.get("gridY").toString());
+
                 JSONArray islands = server.getJSONArray("islandInstances");
                 int islandSize = islands.length();
                 for (int j = 0; j < islandSize; j++) {
                     //get the name of the island
                     String island = islands.getJSONObject(j).get("name").toString();
-                    if (island.equalsIgnoreCase(PVE_MAPS[k])) {
+
+                    if (island.equalsIgnoreCase(Constants.PVE_MAPS[k])) {
                         islands.getJSONObject(j).put("IslandInstanceCustomDatas1", "PowerStoneIndex");
                         islands.getJSONObject(j).put("IslandInstanceCustomDatas2", index);
                         long islandX = islands.getJSONObject(j).getLong("worldX");
@@ -353,7 +392,27 @@ public class AtlasJSONParser {
                         BigDecimal calculatedX = getCalculated(islandX, totalX);
                         BigDecimal calculatedY = getCalculated(islandY, totalY);
                         String position = "X=" + calculatedX + ",Y=" + calculatedY;
+
                         powerstones.add(position);
+                        /**
+                         * let's get the disco zones, then modify it to change
+                         * the worldx and worldy
+                         */
+                        JSONArray discoZone = getDiscoZones(island);
+                        int discoSize = discoZone.length();
+                        for (int x = 0; x < discoSize; x++) {
+                            JSONObject discoInfo = discoZone.getJSONObject(x);
+                            
+                            long xLocation = (grid * (powerStoneX + 1)) - (grid / 2);
+                            long yLocation = (grid * (powerStoneY + 1)) - (grid / 2);
+                            discoInfo.put("worldX", xLocation);
+                            discoInfo.put("worldY", yLocation);
+                            discoInfo.put("bIsManuallyPlaced", "true");
+                        }
+                        /**
+                         * add the discozone to the server in question
+                         */
+                        server.put("discoZones", discoZone);
                         power++;
                         index++;
                     }
@@ -366,8 +425,9 @@ public class AtlasJSONParser {
     public void setPowerEssences() {
         int index = 0;
         JSONArray servers = obj.getJSONArray("servers");
+
         int size = servers.length();
-        for (int k = 0; k < PVE_MAPS.length; k++) {
+    
             for (int i = 0; i < size; i++) {
                 //get the islands on the server
                 JSONObject server = servers.getJSONObject(i);
@@ -376,7 +436,7 @@ public class AtlasJSONParser {
                 for (int j = 0; j < islandSize; j++) {
                     //get the name of the island
                     String island = islands.getJSONObject(j).get("name").toString();
-                    if (island.equalsIgnoreCase(PVE_MAPS[k])) {
+                    if (island.equalsIgnoreCase(Constants.TRENCH)) {
                         islands.getJSONObject(j).put("IslandInstanceCustomDatas1", "PowerStoneIndex");
                         islands.getJSONObject(j).put("IslandInstanceCustomDatas2", index);
                         long islandX = islands.getJSONObject(j).getLong("worldX");
@@ -384,9 +444,55 @@ public class AtlasJSONParser {
                         BigDecimal calculatedX = getCalculated(islandX, totalX);
                         BigDecimal calculatedY = getCalculated(islandY, totalY);
                         String position = "X=" + calculatedX + ",Y=" + calculatedY;
+
                         essences.add(position);
                         index++;
+                        
                     }
+                }
+            }
+
+       
+        setTrenchDiscos();
+    }
+
+    private void setTrenchDiscos() {
+        JSONArray servers = obj.getJSONArray("servers");
+
+        int size = servers.length();
+
+        for (int i = 0; i < size; i++) {
+            //get the islands on the server
+            JSONObject server = servers.getJSONObject(i);
+            int powerEssenceX = Integer.parseInt(server.get("gridX").toString());
+            int powerEssenceY = Integer.parseInt(server.get("gridY").toString());
+            JSONArray islands = server.getJSONArray("islandInstances");
+            int islandSize = islands.length();
+            for (int j = 0; j < islandSize; j++) {
+                //get the name of the island
+                String island = islands.getJSONObject(j).get("name").toString();
+                if (island.equalsIgnoreCase(Constants.TRENCH)) {
+
+                    /**
+                     * let's get the disco zones, then modify it to change the
+                     * worldx and worldy
+                     */
+                    JSONArray discoZone = loader.getTrenchDiscos().get(trenchCount);
+                    int discoSize = discoZone.length();
+                    for (int x = 0; x < discoSize; x++) {
+                        JSONObject discoInfo = discoZone.getJSONObject(x);
+                        //(CellSize*(GridX+1))-(Cellsize/2)
+                        long xLocation = (grid * (powerEssenceX + 1)) - (grid / 2);
+                        long yLocation = (grid * (powerEssenceY + 1)) - (grid / 2);
+                        discoInfo.put("worldX", xLocation);
+                        discoInfo.put("worldY", yLocation);
+                        discoInfo.put("bIsManuallyPlaced", "true");
+                    }
+                    trenchCount++;
+                    /**
+                     * add the discozone to the island in question
+                     */
+                    server.put("discoZones", discoZone);
                 }
             }
 
@@ -403,15 +509,19 @@ public class AtlasJSONParser {
                 //get the discoZones on the server
                 JSONObject server = servers.getJSONObject(i);
                 String name = server.get("name").toString();
+                int templateX = server.getInt("gridX");
+                int templateY = server.getInt("gridY");
+
                 String template = "";
                 try {
                     template = server.get("serverTemplateName").toString();
                 } catch (Exception e) {
                     template = "No_Template";
                 }
-
-                server.put("name", template + "_" + serverCount);
-                serverCount++;
+                if (name.length() == 0) {
+                    server.put("name", template + " " + getGrid(templateX, templateY));
+                    serverCount++;
+                }
             }
 
         } catch (Exception e) {
@@ -419,19 +529,21 @@ public class AtlasJSONParser {
         }
     }
 
+    public String getGrid(int x, int y) {
+
+        String grid = letters[x] + (y + 1) + "";
+        return grid;
+
+    }
+
+    String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
+
     private static BigDecimal getCalculated(long current, long total) {
         BigDecimal islandDec = new BigDecimal(current);
         BigDecimal worldDec = new BigDecimal(total);
         BigDecimal decimal = islandDec.divide(worldDec, 9, BigDecimal.ROUND_FLOOR);
         return decimal;
     }
-
-    static final String TRENCH = "Trench_B";
-    static final String CAVE = "Mnt_H_CP_Cave";
-
-    static final String[] PVE_MAPS = {"MNT_X_WR_PVE", "MNT_R_CH_PVE", "CAY_C_EE_PVE", "MNT_Y_WU_PVE",
-        "MNT_R_CL_PVE", "MNT_Y_EU_PVE", "MNT_S_WT_PVE", "MNT_U_ER_PVE",
-        "MNT_G_ET_PVE"};
 
     private static String getQuestString() {
         String s = common.atlas.QuestEntries.ENTRIES;
@@ -446,11 +558,14 @@ public class AtlasJSONParser {
         String[] trenches = quests[11].split("PointOfInterestID=");
         String[] fountains = quests[2].split("PointOfInterestID=");
         String[] powerStones = quests[1].split("PointOfInterestID=");
+        String[] ghostShip = quests[3].split("PointOfInterestID=");
+
         s = replaceLocations(s, powerStones, powerstones);
+
         s = replaceLocations(s, fountains, powerstones);
         s = replaceLocation(s, ice, positionCave);
         s = replaceLocations(s, trenches, positionsTrench);
-
+        s= replaceLocation(s, ghostShip, getGhostShipLocation());
         return s;
     }
 
@@ -468,7 +583,7 @@ public class AtlasJSONParser {
                 String start = line.substring(line.indexOf(key) + length, line.indexOf(")", line.indexOf(key)));
 
                 String end = "";
-                if (index < 8) {
+                if (index < 9) {
                     end = locations.get(index);
                 } else {
                     end = positionKraken;
@@ -592,4 +707,34 @@ public class AtlasJSONParser {
         }
     }
 
+    private static String getGhostShipLocation() {
+       String position ="";
+        JSONArray paths = obj.getJSONArray("shipPaths");
+        int pathSize = paths.length();
+        for (int i = 0; i < pathSize; i++) {
+            String pathClass = paths.getJSONObject(i).get("AutoSpawnShipClass").toString();
+            if (pathClass.contains("PathFollowingGhostShip_BP")) {
+                System.out.println("Ghostship path found");
+                JSONArray ghostPath = paths.getJSONObject(i).getJSONArray("Nodes");
+                //the first node can be the icon
+                long ghostX = ghostPath.getJSONObject(0).getLong("worldX");
+                long ghostY = ghostPath.getJSONObject(0).getLong("worldY");
+                BigDecimal calculatedX = getCalculated(ghostX, totalX);
+                BigDecimal calculatedY = getCalculated(ghostY, totalY);
+                position = "X=" + calculatedX + ",Y=" + calculatedY;
+            }
+        }
+         return position;
+    }
+
+    /**
+     * "MapImageURL": "http://cdn.atlasdedicated.com/RookieCove_UpperMid.jpg",
+     * "OverAllMapImageURL":
+     * "http://cdn.atlasdedicated.com/Overworld_Blank.jpeg", "BaseServerArgs":
+     * "%MapName%%GridLocation%?AltSaveDirectoryName=%AltSaveDir%?
+     * MaxPlayers=200?ReservedPlayerSlots=50?QueryPort=%QUERYPORT%?Port=%PORT%?SeamlessIP=%MACHINEIP%?
+     * MapPlayerLocation=true?ControlMaxClaimTaxRate=50?TradeRouteShipmentMaxWeight=1000?VirtualShipDelayInSeconds=600%
+     * AdditionalMapArguements% -log -server -culture=en -NoCrashDialog
+     * -NoBattlEye",
+     */
 }
