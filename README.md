@@ -16,7 +16,7 @@ The Populate Power Stones and Essences will set the quest entries to the correct
 
 The add transient nodes check box will add cursed and sulfurous ground to the islands specified in the transient.txt file.  These islands were pulled from the official json, but can add additional islands to the file.  This will alternate between the two transient types.  Disabled in v1.2c
 
-Selecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program.  If you don't overwrite, it will save the json next to Beach_Atlas_Config.jar inside the dist folder.
+Selecting the overwrite option will overwrite all the changes to the json.  This is not recommended in early versions of the program.  If you don't overwrite, it will save a ServerGrid_modified.json next to the selected json Beach_Atlas_Config.jar inside the dist folder.
 
 **Requirements**
 Currently only windows is tested to function.
